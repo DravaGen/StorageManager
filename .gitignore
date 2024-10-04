@@ -2,5 +2,4 @@
 **/venv
 **/.env
 run_project.py
-raise_database.py
 test.py

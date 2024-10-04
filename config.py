@@ -21,9 +21,9 @@ class PostgreSQLConfig:
 
     DB_USER = os.getenv("PSQL_USER")  # Пользователь базы данных
     DB_PASSWORD = os.getenv("PSQL_PASSWORD")  # Пароль от базы данных
-    DB_HOST = os.getenv("PSQL_HOST")  # Хостинг базы данных
-    DB_PORT = os.getenv("PSQL_PORT")  # Порт базы данных
     DB_NAME = os.getenv("PSQL_DATABASE")  # Имя базы данных
+    DB_HOST = os.getenv("PSQL_HOST") or "localhost"  # Хостинг базы данных
+    DB_PORT = os.getenv("PSQL_PORT") or "5432"  # Порт базы данных
 
 
 class FastApiConfig:
