@@ -8,16 +8,17 @@ class FileSchema(BaseModel):
     """Схема файла"""
 
     id: int  # Идентификатор
+    owner_id: int  # Пользователь которую принадлежит файл
     name: str  # Название файла
     extension: str  # Расширение файла
     size: int  # Размер файда в байтах
     path: str  # Путь к файлу
-    created_at: datetime = Field(datetime.now(), description="YYYY-MM-Thh:mm:ss")
-    # Дата создания файла (хранить в ISO .isoformat())
-    updated_at: datetime | None = None
-    # Дата обновления файла  (хранить в ISO .isoformat())
-    comment: str | None = None  # Коментарий к файлу
+    created_at: datetime = Field(datetime.now().isoformat())  # Дата создания файла
+    updated_at: datetime | None = None  # Дата обновления файла
+    comment: str | None = Field(None, max_length=255)  # Коментарий к файлу
 
+    class Config:
+        from_attributes = True
 
     @staticmethod
     def get_full_name(name: str, extension: str) -> str:
@@ -25,13 +26,11 @@ class FileSchema(BaseModel):
 
         return f"{name}.{extension}"
 
-
     @property
     def full_name(self) -> str:
         """Название файла с расширением"""
 
         return self.get_full_name(self.name, self.extension)
-
 
     @property
     def directory(self) -> Path:
@@ -39,13 +38,11 @@ class FileSchema(BaseModel):
 
         return Path(self.path)
 
-
     @staticmethod
     def get_full_path(directory: str, full_name: str) -> Path:
         """Возвращает путь к файлу в зависимости от данных"""
 
         return Path(directory, full_name)
-
 
     @property
     def full_path(self):
@@ -54,17 +51,37 @@ class FileSchema(BaseModel):
         return self.get_full_path(self.directory, self.full_name)
 
 
-class UpdateFileSchema(BaseModel):
+class FileCreateSchema(BaseModel):
+    """Схема создания файла"""
+
+    name: str = Field(..., max_length=255)
+    extension: str = Field(..., max_length=10)
+    size: int = Field(..., ge=0,  le=2147483647)
+    path: str = Field(..., max_length=255)
+
+
+class FileUpdateForm(BaseModel):
     """Схема для обновления данных файла"""
 
-    name: Optional[str] = Field(default=None, description="Имя файла")
-    path: Optional[str] = Field(default=None, description="Путь к файлу")
-    comment: Optional[str] = Field(default=None, description="Комментарий к файлу")
-
+    name: Optional[str] = Field(
+        None,
+        max_length=265,
+        description="Имя файла"
+    )
+    path: Optional[str] = Field(
+        None,
+        max_length=255,
+        description="Путь к файлу"
+    )
+    comment: Optional[str] = Field(
+        None,
+        max_length=255,
+        description="Комментарий к файлу"
+    )
 
     @model_validator(mode="after")
     def validate_params(self):
-        """Валидация данных"""
+        """Проверяет что форма не пустая"""
 
         if not any(self.model_dump().values()):
             raise ValueError("an empty request")
@@ -72,37 +89,6 @@ class UpdateFileSchema(BaseModel):
         return self
 
 
-    @field_validator("name")
-    @classmethod
-    def validate_name(cls, name):
-        """Валидирование названия файла"""
-
-        # Проверять за запрещенные симновы 
-
-        return name
-
-
-    @field_validator("path")
-    @classmethod
-    def validate_path(cls, path):
-        """Валидирование пути к файлу"""
-
-        # Проверять на корректность пути
-
-        return path
-
-
-    @field_validator("comment")
-    @classmethod
-    def validate_comment(cls, comment):
-        """Валидирование комментария"""
-
-        # Возможные ограничения по длине
-
-        return comment
-
-
-class ResponseOK(BaseModel):
-    """Схема базового ответа"""
-
-    response: str = "ok"
+class FailFilesInitialization(Exception):
+    """Исключение которое пробрасывается при неудачной инициализации файлов"""
+    pass

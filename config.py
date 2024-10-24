@@ -25,6 +25,17 @@ class PostgreSQLConfig:
     DB_HOST = os.getenv("PSQL_HOST") or "localhost"  # Хостинг базы данных
     DB_PORT = os.getenv("PSQL_PORT") or "5432"  # Порт базы данных
 
+    SQLALCHEMY_URL = f"postgresql+asyncpg://{DB_USER}:{DB_PASSWORD}" \
+                     f"@{DB_HOST}/{DB_NAME}"
+
+
+class RedisConfig:
+    """Настройки Redis"""
+
+    HOST = os.getenv("REDIS_HOST") or "localhost"
+    PORT = os.getenv("REDIS_PORT") or "6379"
+    UPL = f"redis://{HOST}:{PORT}"
+
 
 class FastApiConfig:
     """Настройки FastApi"""
